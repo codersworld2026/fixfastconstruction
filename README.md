@@ -9,3 +9,4 @@
 
   Run `npm run dev` to start the development server.
   GitHub and Vercel connected.
+GitHub and Vercel connected.
