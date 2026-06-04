@@ -2,6 +2,10 @@ import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router";
 
+import { useSeo } from "../hooks/useSeo";
+import { canonical } from "../data/site";
+import { SiteFooter } from "./site/SiteFooter";
+
 import {
   Hammer,
   Wrench,
@@ -26,6 +30,13 @@ const PHONE = "07828 786 593";
 const EMAIL = "Fixfasthomerepair@gmail.com";
 
 export default function HomePage() {
+  useSeo({
+    title: "FixFast Construction | Plumbing, Electrical & Home Repairs",
+    description:
+      "FixFast Construction provides reliable plumbing, electrical, construction and home repair services. Get fast, professional help for your property today.",
+    canonical: canonical("/"),
+  });
+
   const heroRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -374,6 +385,15 @@ export default function HomePage() {
               </motion.div>
             ))}
           </div>
+
+          <div className="text-center mt-12">
+            <Link
+              to="/services"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-sky-500 text-white rounded-lg text-lg font-medium hover:bg-sky-600 transition-colors shadow-lg shadow-sky-500/25"
+            >
+              View All Services
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -619,17 +639,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-neutral-950 border-t border-white/10 text-neutral-500 text-center">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-lg font-bold text-white">Fix Fast <span className="text-sky-400">Construction</span></span>
-          </div>
-          <p className="text-sm">
-            &copy; 2026 Fix Fast Construction LTD. Serving Greater Manchester
-            with pride.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Floating Call Button (mobile) */}
       <a

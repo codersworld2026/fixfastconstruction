@@ -2,6 +2,10 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { Link } from "react-router";
 
+import { useSeo } from "../hooks/useSeo";
+import { canonical } from "../data/site";
+import { SiteFooter } from "./site/SiteFooter";
+
 import {
   Hammer,
   Phone,
@@ -21,6 +25,13 @@ const PHONE = "07828 786 593";
 const EMAIL = "Fixfasthomerepair@gmail.com";
 
 export default function ContactPage() {
+  useSeo({
+    title: "Contact FixFast Construction | Get a Free Quote",
+    description:
+      "Contact FixFast Construction for plumbing, electrical, construction and home repair services. Get a fast response and free quote today.",
+    canonical: canonical("/contact"),
+  });
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -308,17 +319,7 @@ export default function ContactPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-neutral-950 border-t border-white/10 text-neutral-500 text-center">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-lg font-bold text-white">Fix Fast <span className="text-sky-400">Construction</span></span>
-          </div>
-          <p className="text-sm">
-            &copy; 2026 Fix Fast Construction LTD. Serving Greater Manchester
-            with pride.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
