@@ -67,7 +67,7 @@ export function LeadsPanel({
         </button>
       </div>
 
-      <div className="mt-4 bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+      <div className="mt-4 bg-neutral-900 border border-white/10 rounded-xl overflow-x-auto">
         {loading ? (
           <div className="p-10 text-center text-neutral-400">Loading…</div>
         ) : error ? (
@@ -75,7 +75,7 @@ export function LeadsPanel({
         ) : leads.length === 0 ? (
           <div className="p-10 text-center text-neutral-400">No leads yet.</div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[720px]">
             <thead>
               <tr className="text-left text-neutral-400 text-xs uppercase tracking-wide">
                 <th className="px-4 py-3">Name</th>
@@ -110,15 +110,15 @@ export function LeadsPanel({
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={() => create(l, "quote")}
-                        className="px-3 py-1.5 rounded-lg border border-white/10 text-xs text-neutral-200 hover:bg-white/5"
+                        className="px-3 py-1.5 rounded-lg border border-white/10 text-xs text-neutral-200 hover:bg-white/5 whitespace-nowrap"
                       >
-                        Quote
+                        Create Quote from Lead
                       </button>
                       <button
                         onClick={() => create(l, "invoice")}
-                        className="px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-medium hover:bg-sky-600"
+                        className="px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-medium hover:bg-sky-600 whitespace-nowrap"
                       >
-                        Invoice
+                        Create Invoice
                       </button>
                     </div>
                   </td>

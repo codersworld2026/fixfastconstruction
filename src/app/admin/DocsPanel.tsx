@@ -3,7 +3,7 @@ import { api, money, fmtDate, type Doc, type DocKind } from "./api";
 import { Pill } from "./ui";
 
 const STATUS_OPTIONS: Record<DocKind, string[]> = {
-  invoice: ["draft", "finalized", "sent", "paid"],
+  invoice: ["draft", "sent", "paid", "overdue"],
   quote: ["draft", "sent", "accepted", "declined"],
 };
 
@@ -12,11 +12,15 @@ export function DocsPanel({
   reloadKey,
   notify,
   openDoc,
+  onNew,
+  onConvert,
 }: {
   kind: DocKind;
   reloadKey: number;
   notify: (m: string) => void;
   openDoc: (doc: Doc) => void;
+  onNew: () => void;
+  onConvert: (doc: Doc) => void;
 }) {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [status, setStatus] = useState("");
@@ -65,19 +69,25 @@ export function DocsPanel({
         >
           Refresh
         </button>
+        <button
+          onClick={onNew}
+          className="px-4 py-2 rounded-lg bg-sky-500 text-white text-sm font-semibold hover:bg-sky-600"
+        >
+          + Create {kind === "quote" ? "Quote" : "Invoice"}
+        </button>
       </div>
 
-      <div className="mt-4 bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+      <div className="mt-4 bg-neutral-900 border border-white/10 rounded-xl overflow-x-auto">
         {loading ? (
           <div className="p-10 text-center text-neutral-400">Loading…</div>
         ) : error ? (
           <div className="p-10 text-center text-amber-300">{error}</div>
         ) : docs.length === 0 ? (
           <div className="p-10 text-center text-neutral-400">
-            No {label.toLowerCase()} yet. Create one from a lead.
+            No {label.toLowerCase()} yet. Use “Create {kind === "quote" ? "Quote" : "Invoice"}” to add one.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="text-left text-neutral-400 text-xs uppercase tracking-wide">
                 <th className="px-4 py-3">{kind === "quote" ? "Quote" : "Invoice"}</th>
@@ -101,13 +111,23 @@ export function DocsPanel({
                     <Pill status={d.status} />
                   </td>
                   <td className="px-4 py-3 text-neutral-400">{fmtDate(d.issuedAt)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => openDoc(d)}
-                      className="px-3 py-1.5 rounded-lg border border-white/10 text-xs text-neutral-200 hover:bg-white/5"
-                    >
-                      Open
-                    </button>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2 justify-end">
+                      {kind === "quote" && (
+                        <button
+                          onClick={() => onConvert(d)}
+                          className="px-3 py-1.5 rounded-lg border border-sky-500/40 text-xs text-sky-300 hover:bg-sky-500/10 whitespace-nowrap"
+                        >
+                          Convert to Invoice
+                        </button>
+                      )}
+                      <button
+                        onClick={() => openDoc(d)}
+                        className="px-3 py-1.5 rounded-lg border border-white/10 text-xs text-neutral-200 hover:bg-white/5"
+                      >
+                        Open
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

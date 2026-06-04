@@ -4,7 +4,7 @@ import { LeadsPanel } from "./LeadsPanel";
 import { DocsPanel } from "./DocsPanel";
 import { DocEditor } from "./DocEditor";
 import { Toast } from "./ui";
-import type { Doc, DocKind } from "./api";
+import { api, blankDoc, type Doc, type DocKind } from "./api";
 
 type Tab = "leads" | "quotes" | "invoices";
 
@@ -24,6 +24,17 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
   const bump = (kind: DocKind) =>
     setReload((r) => ({ ...r, [kind]: r[kind] + 1 }));
 
+  const convertQuote = async (quote: Doc) => {
+    try {
+      const inv: Doc = await api.post("/invoices", { fromQuoteId: quote.id });
+      notify(`Created invoice ${inv.number} from quote`);
+      bump("invoice");
+      setEditing(inv);
+    } catch (e) {
+      notify((e as Error).message);
+    }
+  };
+
   const tabs: { id: Tab; label: string }[] = [
     { id: "leads", label: "Leads" },
     { id: "quotes", label: "Quotes" },
@@ -33,7 +44,7 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
   return (
     <div className="min-h-screen bg-neutral-950">
       <header className="sticky top-0 z-20 bg-neutral-900/95 backdrop-blur border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <div className="font-bold text-white">
             FixFast <span className="text-sky-400">Admin</span>
           </div>
@@ -42,10 +53,8 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                  tab === t.id
-                    ? "bg-sky-500 text-white"
-                    : "text-neutral-300 hover:bg-white/5"
+                className={`px-3 sm:px-4 py-2 rounded-lg text-sm transition-colors ${
+                  tab === t.id ? "bg-sky-500 text-white" : "text-neutral-300 hover:bg-white/5"
                 }`}
               >
                 {t.label}
@@ -66,7 +75,7 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {tab === "leads" && (
           <LeadsPanel
             notify={notify}
@@ -77,10 +86,24 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
           />
         )}
         {tab === "quotes" && (
-          <DocsPanel kind="quote" reloadKey={reload.quote} notify={notify} openDoc={setEditing} />
+          <DocsPanel
+            kind="quote"
+            reloadKey={reload.quote}
+            notify={notify}
+            openDoc={setEditing}
+            onNew={() => setEditing(blankDoc("quote"))}
+            onConvert={convertQuote}
+          />
         )}
         {tab === "invoices" && (
-          <DocsPanel kind="invoice" reloadKey={reload.invoice} notify={notify} openDoc={setEditing} />
+          <DocsPanel
+            kind="invoice"
+            reloadKey={reload.invoice}
+            notify={notify}
+            openDoc={setEditing}
+            onNew={() => setEditing(blankDoc("invoice"))}
+            onConvert={() => {}}
+          />
         )}
       </main>
 

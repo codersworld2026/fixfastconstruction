@@ -102,15 +102,51 @@ export interface Doc {
   customer: Customer;
   service?: string;
   lineItems: LineItem[];
+  labourCost?: number;
+  materialsCost?: number;
+  discount?: number;
+  discountAmount?: number;
   taxRate: number;
   subtotal: number;
   taxAmount: number;
   total: number;
   status: string;
   notes?: string;
+  paymentTerms?: string;
   issuedAt: string;
   dueAt?: string | null;
   validUntil?: string | null;
+}
+
+/** A blank in-memory document for the "create from scratch" form (no id yet). */
+export function blankDoc(kind: DocKind): Doc {
+  const now = new Date();
+  const future = new Date(now);
+  future.setDate(future.getDate() + (kind === "quote" ? 30 : 14));
+  return {
+    id: "",
+    kind,
+    number: kind === "quote" ? "New quote" : "New invoice",
+    customer: { name: "", email: "", phone: "", address: "" },
+    service: "",
+    lineItems: [{ description: "", quantity: 1, unitPrice: 0 }],
+    labourCost: 0,
+    materialsCost: 0,
+    discount: 0,
+    taxRate: 0.2,
+    subtotal: 0,
+    taxAmount: 0,
+    total: 0,
+    status: "draft",
+    notes: "",
+    paymentTerms:
+      kind === "quote"
+        ? "This quotation is valid for 30 days."
+        : "Payment due within 14 days of the invoice date.",
+    issuedAt: now.toISOString(),
+    dueAt: kind === "invoice" ? future.toISOString() : null,
+    validUntil: kind === "quote" ? future.toISOString() : null,
+  };
 }
 
 /* ----------------------------- Helpers ----------------------------- */
@@ -124,11 +160,26 @@ export const fmtDate = (iso?: string | null) =>
       })
     : "—";
 
-export function computeTotals(lineItems: LineItem[], taxRate: number) {
-  const subtotal = (lineItems || []).reduce(
+export function computeTotals(
+  lineItems: LineItem[],
+  taxRate: number,
+  extras: { labourCost?: number; materialsCost?: number; discount?: number } = {},
+) {
+  const labour = Number(extras.labourCost || 0);
+  const materials = Number(extras.materialsCost || 0);
+  const itemsTotal = (lineItems || []).reduce(
     (s, li) => s + Number(li.quantity || 0) * Number(li.unitPrice || 0),
     0,
   );
-  const taxAmount = subtotal * Number(taxRate || 0);
-  return { subtotal, taxAmount, total: subtotal + taxAmount };
+  const subtotal = itemsTotal + labour + materials;
+  const discountAmount = Math.min(Math.max(Number(extras.discount || 0), 0), subtotal);
+  const taxable = subtotal - discountAmount;
+  const taxAmount = taxable * Number(taxRate || 0);
+  return {
+    itemsTotal,
+    subtotal,
+    discountAmount,
+    taxAmount,
+    total: taxable + taxAmount,
+  };
 }
