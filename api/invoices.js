@@ -6,6 +6,7 @@ import {
   setStatus,
   listDocuments,
   findDocument,
+  deleteDocument,
 } from "../lib/documents.js";
 
 const KIND = "invoice";
@@ -15,6 +16,7 @@ const KIND = "invoice";
 //   POST   { fromLeadId | fromQuoteId | customer, lineItems, taxRate, notes }
 //   PUT    { id, customer?, lineItems?, taxRate?, notes? }   (recomputes totals)
 //   PATCH  { id, status }   (draft -> finalized -> sent -> paid)
+//   DELETE ?id=  or  { id }   (soft delete)
 export default async function handler(req, res) {
   try {
     if (denyIfNotAdmin(req, res)) return;
@@ -44,7 +46,13 @@ export default async function handler(req, res) {
       return res.json(await setStatus(KIND, id, status));
     }
 
-    return methodNotAllowed(res, ["GET", "POST", "PUT", "PATCH"]);
+    if (req.method === "DELETE") {
+      const id = req.query.id || (req.body && req.body.id);
+      if (!id) return res.status(400).json({ error: "id is required" });
+      return res.json(await deleteDocument(KIND, id));
+    }
+
+    return methodNotAllowed(res, ["GET", "POST", "PUT", "PATCH", "DELETE"]);
   } catch (e) {
     return handleError(res, e);
   }

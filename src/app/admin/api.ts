@@ -40,6 +40,7 @@ export const api = {
   post: (p: string, body?: unknown) => request(p, { method: "POST", body }),
   put: (p: string, body?: unknown) => request(p, { method: "PUT", body }),
   patch: (p: string, body?: unknown) => request(p, { method: "PATCH", body }),
+  del: (p: string, body?: unknown) => request(p, { method: "DELETE", body }),
 
   async login(password: string) {
     const res = await fetch("/api/admin-login", {

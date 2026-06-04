@@ -26,8 +26,11 @@ export function DocsPanel({
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState<Doc | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const path = kind === "quote" ? "/quotes" : "/invoices";
   const label = kind === "quote" ? "Quotes" : "Invoices";
+  const noun = kind === "quote" ? "quote" : "invoice";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,6 +48,23 @@ export function DocsPanel({
   useEffect(() => {
     load();
   }, [load, reloadKey]);
+
+  const confirmDelete = async () => {
+    if (!confirming) return;
+    setDeleting(true);
+    try {
+      await api.del(`${path}?id=${encodeURIComponent(confirming.id)}`);
+      // Drop it from the list immediately so the page never breaks mid-refresh.
+      setDocs((list) => list.filter((d) => d.id !== confirming.id));
+      notify(`${confirming.number} deleted`);
+      setConfirming(null);
+      load();
+    } catch (e) {
+      notify((e as Error).message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div>
@@ -127,6 +147,12 @@ export function DocsPanel({
                       >
                         Open
                       </button>
+                      <button
+                        onClick={() => setConfirming(d)}
+                        className="px-3 py-1.5 rounded-lg border border-red-500/40 text-xs text-red-300 hover:bg-red-500/10 whitespace-nowrap"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -135,6 +161,37 @@ export function DocsPanel({
           </table>
         )}
       </div>
+
+      {confirming && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="w-full max-w-md bg-neutral-900 border border-white/10 rounded-2xl shadow-xl shadow-black/50 p-6">
+            <h3 className="text-lg font-bold text-white">Delete {noun}?</h3>
+            <p className="mt-2 text-sm text-neutral-300">
+              Are you sure you want to delete this {noun}? This action cannot be undone.
+            </p>
+            <div className="mt-2 text-sm text-neutral-400">
+              {confirming.number}
+              {confirming.customer?.name ? ` — ${confirming.customer.name}` : ""}
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setConfirming(null)}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg border border-white/10 text-sm text-neutral-200 hover:bg-white/5 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60"
+              >
+                {deleting ? "Deleting…" : `Delete ${noun}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

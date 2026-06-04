@@ -5,6 +5,7 @@ const STATUS_STYLES: Record<string, string> = {
   draft: "bg-stone-500/20 text-stone-300",
   finalized: "bg-amber-500/20 text-amber-300",
   sent: "bg-cyan-500/20 text-cyan-300",
+  overdue: "bg-red-500/20 text-red-300",
   paid: "bg-emerald-500/25 text-emerald-300",
   accepted: "bg-emerald-500/25 text-emerald-300",
   declined: "bg-red-500/20 text-red-300",
