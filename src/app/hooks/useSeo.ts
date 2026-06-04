@@ -5,19 +5,25 @@ interface SeoOptions {
   description: string;
   /** Absolute canonical URL, e.g. https://fixfastconstruction.com/contact */
   canonical: string;
+  /** Optional JSON-LD structured data injected into <head> for this route. */
+  jsonLd?: object | null;
 }
 
 /**
- * Per-route SEO. Updates the document <title>, the meta description and the
- * canonical <link> on mount and whenever the values change. This keeps each
- * route's canonical pointing at its own URL instead of the homepage.
+ * Per-route SEO. Updates the document <title>, the meta description, the
+ * canonical <link> and optional JSON-LD on mount and whenever the values
+ * change. This keeps each route's metadata pointing at its own URL instead
+ * of the homepage.
  */
-export function useSeo({ title, description, canonical }: SeoOptions) {
+export function useSeo({ title, description, canonical, jsonLd }: SeoOptions) {
+  const jsonLdString = jsonLd ? JSON.stringify(jsonLd) : "";
+
   useEffect(() => {
     document.title = title;
     setMetaByName("description", description);
     setCanonical(canonical);
-  }, [title, description, canonical]);
+    setJsonLd(jsonLdString);
+  }, [title, description, canonical, jsonLdString]);
 }
 
 function setMetaByName(name: string, content: string) {
@@ -42,4 +48,21 @@ function setCanonical(href: string) {
     document.head.appendChild(el);
   }
   el.setAttribute("href", href);
+}
+
+const JSON_LD_ID = "seo-jsonld";
+
+function setJsonLd(json: string) {
+  let el = document.head.querySelector<HTMLScriptElement>(`#${JSON_LD_ID}`);
+  if (!json) {
+    if (el) el.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.id = JSON_LD_ID;
+    document.head.appendChild(el);
+  }
+  el.textContent = json;
 }
